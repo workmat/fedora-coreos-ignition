@@ -1,0 +1,35 @@
+# Ignition Configuration File (ignition.yaml)
+ignition:
+  version: 3.2.0
+computer:
+  hostname: fedora-fcos-vm
+  units:
+    - name: network
+      state: present
+      network:
+        version: 2
+        routes:
+          - destination: 0.0.0.0/0
+            via: 192.168.1.1 # <-- Change this to your gateway.
+        interfaces:
+          - name: eth0
+            state: up
+            addresses:
+              - 192.168.1.100/24 # <-- Change this to your desired static IP.
+            gateway: 192.168.1.1
+  storage:
+    filesystems:
+      - name: rootfs
+        device: /dev/sda # <-- Adjust if your disk device name is different.
+        # If you have an additional data volume, add it here.
+  passwd:
+    users:
+      - name: core
+        ssh_authorized_keys:
+          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...your_ssh_key... user@host
+        groups: ["wheel"]
+  # Add other configurations as needed (e.g., packages, timezone)
+  # packages:
+  #   applications:
+  #     - name: httpd
+  #       version: 2.4
