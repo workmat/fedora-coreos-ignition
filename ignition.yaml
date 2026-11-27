@@ -1,35 +1,48 @@
-# Ignition Configuration File (ignition.yaml)
-ignition:
-  version: 3.2.0
-computer:
-  hostname: fedora-fcos-vm
-  units:
-    - name: network
-      state: present
-      network:
-        version: 2
-        routes:
-          - destination: 0.0.0.0/0
-            via: 192.168.1.1 # <-- Change this to your gateway.
-        interfaces:
-          - name: eth0
-            state: up
-            addresses:
-              - 192.168.1.100/24 # <-- Change this to your desired static IP.
-            gateway: 192.168.1.1
-  storage:
-    filesystems:
-      - name: rootfs
-        device: /dev/sda # <-- Adjust if your disk device name is different.
-        # If you have an additional data volume, add it here.
-  passwd:
-    users:
-      - name: core
-        ssh_authorized_keys:
-          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...your_ssh_key... user@host
-        groups: ["wheel"]
-  # Add other configurations as needed (e.g., packages, timezone)
-  # packages:
-  #   applications:
-  #     - name: httpd
-  #       version: 2.4
+
+variant: fcos
+version: 1.6.0
+
+# User accounts and authentication
+passwd:
+  users:
+    - name: core
+      groups:
+        - wheel
+      ssh_authorized_keys:
+        - "REPLACE_WITH_YOUR_SSH_PUBLIC_KEY"
+
+# Operating system configuration
+storage:
+  files:
+
+    # Hostname
+    - path: /etc/hostname
+      mode: 0644
+      overwrite: true
+      contents:
+        inline: |
+          fedora-fcos-vm
+
+    # Static network configuration
+    - path: /etc/NetworkManager/system-connections/static.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=static
+          type=ethernet
+          autoconnect=true
+          autoconnect-priority=100
+
+          [ethernet]
+          mac-address=52:54:00:12:34:56
+
+          [ipv4]
+          method=manual
+          address1=192.168.1.100/24
+          gateway=192.168.1.1
+          dns=192.168.1.1;
+          may-fail=false
+
+          [ipv6]
+          method=auto
